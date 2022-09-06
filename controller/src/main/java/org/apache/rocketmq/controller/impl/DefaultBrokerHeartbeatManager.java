@@ -90,7 +90,7 @@ public class DefaultBrokerHeartbeatManager implements BrokerHeartbeatManager {
         }
     }
 
-    private void notifyBrokerInActive(String clusterName, String brokerName, String brokerAddr, Long brokerId) {
+    public void notifyBrokerInActive(String clusterName, String brokerName, String brokerAddr, Long brokerId) {
         for (BrokerLifecycleListener listener : this.brokerLifecycleListeners) {
             listener.onBrokerInactive(clusterName, brokerName, brokerAddr, brokerId);
         }

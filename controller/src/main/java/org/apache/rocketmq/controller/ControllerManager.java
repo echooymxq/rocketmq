@@ -38,6 +38,7 @@ import org.apache.rocketmq.common.protocol.header.NotifyBrokerRoleChangedRequest
 import org.apache.rocketmq.common.protocol.header.namesrv.controller.ElectMasterRequestHeader;
 import org.apache.rocketmq.common.protocol.header.namesrv.controller.ElectMasterResponseHeader;
 import org.apache.rocketmq.controller.elect.impl.DefaultElectPolicy;
+import org.apache.rocketmq.controller.impl.BrokerControllerManager;
 import org.apache.rocketmq.controller.impl.DLedgerController;
 import org.apache.rocketmq.controller.impl.DefaultBrokerHeartbeatManager;
 import org.apache.rocketmq.controller.processor.ControllerRequestProcessor;
@@ -61,6 +62,7 @@ public class ControllerManager {
     private final RemotingClient remotingClient;
     private Controller controller;
     private BrokerHeartbeatManager heartbeatManager;
+    private BrokerControllerManager brokerControllerManager;
     private ExecutorService controllerRequestExecutor;
     private BlockingQueue<Runnable> controllerRequestThreadPoolQueue;
 
@@ -99,6 +101,8 @@ public class ControllerManager {
         this.controller = new DLedgerController(this.controllerConfig, this.heartbeatManager::isBrokerActive,
                 this.nettyServerConfig, this.nettyClientConfig, this.brokerHousekeepingService,
                 new DefaultElectPolicy(this.heartbeatManager::isBrokerActive, this.heartbeatManager::getBrokerLiveInfo));
+
+        this.brokerControllerManager = new BrokerControllerManager(controller, (DefaultBrokerHeartbeatManager)heartbeatManager);
 
         // Register broker inactive listener
         this.heartbeatManager.addBrokerLifecycleListener(this::onBrokerInactive);
@@ -195,6 +199,7 @@ public class ControllerManager {
     public void start() {
         this.heartbeatManager.start();
         this.controller.startup();
+        this.brokerControllerManager.start();
         this.remotingClient.start();
     }
 
@@ -202,6 +207,7 @@ public class ControllerManager {
         this.heartbeatManager.shutdown();
         this.controllerRequestExecutor.shutdown();
         this.controller.shutdown();
+        this.brokerControllerManager.stop();
         this.remotingClient.shutdown();
     }
 
