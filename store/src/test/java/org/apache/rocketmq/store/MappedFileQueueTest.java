@@ -17,11 +17,20 @@
 
 package org.apache.rocketmq.store;
 
-import java.io.FileNotFoundException;
-import java.io.RandomAccessFile;
+import java.io.File;
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.rocketmq.common.ThreadFactoryImpl;
 import org.apache.rocketmq.common.UtilAll;
@@ -30,19 +39,6 @@ import org.apache.rocketmq.store.logfile.MappedFile;
 import org.assertj.core.util.Lists;
 import org.junit.After;
 import org.junit.Test;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
