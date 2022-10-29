@@ -389,21 +389,6 @@ public class MappedFileQueueTest {
         assertThat(hasException.get()).isFalse();
     }
 
-    public static void main(String[] args) throws Exception {
-        DefaultMappedFile mappedFile = new DefaultMappedFile("/Users/echooymxq/1", 1024);
-        MappedByteBuffer buffer = mappedFile.getMappedByteBuffer();
-        buffer.put((byte) 32);
-        mappedFile.release();
-        mappedFile.destroy(32);
-//        FileChannel fileChannel = new RandomAccessFile("/Users/echooymxq/1", "rw").getChannel();
-//        MappedByteBuffer buffer = fileChannel.map(FileChannel.MapMode.READ_WRITE, 0, 1024);
-//        buffer.put((byte) 32);
-//        byte b = buffer.get(0);
-//        System.out.println(b);
-//        UtilAll.cleanBuffer(buffer);
-        System.out.println(buffer.get(0));
-    }
-
     @Test
     public void testMappedFile_Rename() throws IOException, InterruptedException {
         final String fixedMsg = RandomStringUtils.randomAlphanumeric(128);
