@@ -43,6 +43,7 @@ import org.apache.rocketmq.common.message.MessageExtBatch;
 import org.apache.rocketmq.logging.InternalLogger;
 import org.apache.rocketmq.logging.InternalLoggerFactory;
 import org.apache.rocketmq.common.message.MessageExt;
+import org.apache.rocketmq.remoting.common.RemotingUtil;
 import org.apache.rocketmq.store.AppendMessageCallback;
 import org.apache.rocketmq.store.AppendMessageResult;
 import org.apache.rocketmq.store.AppendMessageStatus;
@@ -723,6 +724,10 @@ public class DefaultMappedFile extends AbstractMappedFile {
         if (!fileName.endsWith(".delete")) {
             String newFileName = this.fileName + ".delete";
             try {
+                if (RemotingUtil.isWindowsPlatform()) {
+                    UtilAll.cleanBuffer(this.mappedByteBuffer);
+                    this.fileChannel.close();
+                }
                 Files.move(Paths.get(fileName), Paths.get(newFileName), StandardCopyOption.ATOMIC_MOVE);
                 this.fileName = newFileName;
                 this.file = new File(newFileName);
@@ -742,6 +747,10 @@ public class DefaultMappedFile extends AbstractMappedFile {
         Path currentPath = Paths.get(fileName);
         String baseName = currentPath.getFileName().toString();
         Path parentPath = currentPath.getParent().getParent().resolve(baseName);
+        if (RemotingUtil.isWindowsPlatform()) {
+            UtilAll.cleanBuffer(this.mappedByteBuffer);
+            this.fileChannel.close();
+        }
         Files.move(currentPath, parentPath, StandardCopyOption.ATOMIC_MOVE);
         this.file = parentPath.toFile();
         this.fileName = parentPath.toString();
