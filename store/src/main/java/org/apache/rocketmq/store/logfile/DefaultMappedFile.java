@@ -30,7 +30,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
@@ -93,20 +92,6 @@ public class DefaultMappedFile extends AbstractMappedFile {
         WROTE_POSITION_UPDATER = AtomicIntegerFieldUpdater.newUpdater(DefaultMappedFile.class, "wrotePosition");
         COMMITTED_POSITION_UPDATER = AtomicIntegerFieldUpdater.newUpdater(DefaultMappedFile.class, "committedPosition");
         FLUSHED_POSITION_UPDATER = AtomicIntegerFieldUpdater.newUpdater(DefaultMappedFile.class, "flushedPosition");
-    }
-
-    public static void main(String[] args) throws Exception {
-        FileChannel fileChannel = new RandomAccessFile("/Users/echooymxq/1.txt", "rw").getChannel();
-        MappedByteBuffer buffer = fileChannel.map(MapMode.READ_WRITE, 0, 1024);
-        ByteBuffer b = ByteBuffer.allocate(10);
-        fileChannel.read(b);
-        System.out.println(Arrays.toString(b.array()));
-        MappedByteBuffer buffer1 = new RandomAccessFile("/Users/echooymxq/1.txt", "rw").getChannel().map(MapMode.READ_WRITE, 4, 1024);
-        System.out.println(buffer1.get(0));
-//        buffer.put("Hello".getBytes(StandardCharsets.UTF_8));
-//        buffer.force();
-//        ByteBuffer buff = ByteBuffer.wrap("Hello".getBytes(StandardCharsets.UTF_8));
-//        System.out.println(fileChannel.position());
     }
 
     public DefaultMappedFile() {
