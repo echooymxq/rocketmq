@@ -18,37 +18,36 @@ package org.apache.rocketmq.store.logfile;
 
 import com.sun.jna.NativeLong;
 import com.sun.jna.Pointer;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileChannel.MapMode;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileChannel.MapMode;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerFieldUpdater;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
-
 import org.apache.rocketmq.common.UtilAll;
 import org.apache.rocketmq.common.constant.LoggerName;
+import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.common.message.MessageExtBatch;
+import org.apache.rocketmq.common.message.MessageExtBrokerInner;
 import org.apache.rocketmq.logging.InternalLogger;
 import org.apache.rocketmq.logging.InternalLoggerFactory;
-import org.apache.rocketmq.common.message.MessageExt;
 import org.apache.rocketmq.remoting.common.RemotingUtil;
 import org.apache.rocketmq.store.AppendMessageCallback;
 import org.apache.rocketmq.store.AppendMessageResult;
 import org.apache.rocketmq.store.AppendMessageStatus;
 import org.apache.rocketmq.store.CompactionAppendMsgCallback;
-import org.apache.rocketmq.common.message.MessageExtBrokerInner;
 import org.apache.rocketmq.store.PutMessageContext;
 import org.apache.rocketmq.store.SelectMappedBufferResult;
 import org.apache.rocketmq.store.TransientStorePool;
@@ -94,6 +93,20 @@ public class DefaultMappedFile extends AbstractMappedFile {
         WROTE_POSITION_UPDATER = AtomicIntegerFieldUpdater.newUpdater(DefaultMappedFile.class, "wrotePosition");
         COMMITTED_POSITION_UPDATER = AtomicIntegerFieldUpdater.newUpdater(DefaultMappedFile.class, "committedPosition");
         FLUSHED_POSITION_UPDATER = AtomicIntegerFieldUpdater.newUpdater(DefaultMappedFile.class, "flushedPosition");
+    }
+
+    public static void main(String[] args) throws Exception {
+        FileChannel fileChannel = new RandomAccessFile("/Users/echooymxq/1.txt", "rw").getChannel();
+        MappedByteBuffer buffer = fileChannel.map(MapMode.READ_WRITE, 0, 1024);
+        ByteBuffer b = ByteBuffer.allocate(10);
+        fileChannel.read(b);
+        System.out.println(Arrays.toString(b.array()));
+        MappedByteBuffer buffer1 = new RandomAccessFile("/Users/echooymxq/1.txt", "rw").getChannel().map(MapMode.READ_WRITE, 4, 1024);
+        System.out.println(buffer1.get(0));
+//        buffer.put("Hello".getBytes(StandardCharsets.UTF_8));
+//        buffer.force();
+//        ByteBuffer buff = ByteBuffer.wrap("Hello".getBytes(StandardCharsets.UTF_8));
+//        System.out.println(fileChannel.position());
     }
 
     public DefaultMappedFile() {
@@ -724,12 +737,15 @@ public class DefaultMappedFile extends AbstractMappedFile {
         if (!fileName.endsWith(".delete")) {
             String newFileName = this.fileName + ".delete";
             try {
-                if (RemotingUtil.isWindowsPlatform()) {
+                if (RemotingUtil.isWindowsPlatform() && mappedByteBuffer != null) {
+                    System.out.print("renameToDelete\n");
+                    long position = this.fileChannel.position();
                     UtilAll.cleanBuffer(this.mappedByteBuffer);
                     this.fileChannel.close();
                     Files.move(Paths.get(fileName), Paths.get(newFileName), StandardCopyOption.ATOMIC_MOVE);
                     try (RandomAccessFile file = new RandomAccessFile(newFileName, "rw")) {
                         this.fileChannel = file.getChannel();
+                        this.fileChannel.position(position);
                         this.mappedByteBuffer = this.fileChannel.map(MapMode.READ_WRITE, 0, fileSize);
                     }
                 } else {
@@ -748,12 +764,15 @@ public class DefaultMappedFile extends AbstractMappedFile {
         Path currentPath = Paths.get(fileName);
         String baseName = currentPath.getFileName().toString();
         Path parentPath = currentPath.getParent().getParent().resolve(baseName);
-        if (RemotingUtil.isWindowsPlatform()) {
+        if (RemotingUtil.isWindowsPlatform() && mappedByteBuffer != null) {
+            System.out.print("moveToParent\n");
+            long position = this.fileChannel.position();
             UtilAll.cleanBuffer(this.mappedByteBuffer);
             this.fileChannel.close();
             Files.move(Paths.get(fileName), parentPath, StandardCopyOption.ATOMIC_MOVE);
             try (RandomAccessFile file = new RandomAccessFile(parentPath.toFile(), "rw")) {
                 this.fileChannel = file.getChannel();
+                this.fileChannel.position(position);
                 this.mappedByteBuffer = this.fileChannel.map(MapMode.READ_WRITE, 0, fileSize);
             }
         } else {
