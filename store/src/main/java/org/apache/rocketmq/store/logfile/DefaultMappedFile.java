@@ -771,7 +771,6 @@ public class DefaultMappedFile extends AbstractMappedFile {
         } else {
             Files.move(Paths.get(fileName), parentPath, StandardCopyOption.ATOMIC_MOVE);
         }
-        Files.move(currentPath, parentPath, StandardCopyOption.ATOMIC_MOVE);
         this.file = parentPath.toFile();
         this.fileName = parentPath.toString();
     }
