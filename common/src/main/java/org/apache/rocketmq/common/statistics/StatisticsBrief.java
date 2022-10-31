@@ -26,9 +26,9 @@ public class StatisticsBrief {
     public static final int META_SLOT_NUM_INDEX = 1;
 
     // TopPercentile
-    private long[][] topPercentileMeta;
-    private AtomicInteger[] counts;
-    private AtomicLong totalCount;
+    private final long[][] topPercentileMeta;
+    private final AtomicInteger[] counts;
+    private final AtomicLong totalCount;
 
     // max min avg total
     private long max;
@@ -41,7 +41,7 @@ public class StatisticsBrief {
         }
 
         this.topPercentileMeta = topPercentileMeta;
-        this.counts = new AtomicInteger[slotNum(topPercentileMeta)];
+        this.counts = new AtomicInteger[(int) slotNum(topPercentileMeta)];
         this.totalCount = new AtomicLong(0);
         reset();
     }
@@ -77,6 +77,7 @@ public class StatisticsBrief {
         return true;
     }
 
+    @SuppressWarnings("all")
     private static int slotNum(long[][] meta) {
         int ret = 1;
         for (long[] line : meta) {
@@ -141,6 +142,7 @@ public class StatisticsBrief {
         return Integer.MAX_VALUE;
     }
 
+    @SuppressWarnings("all")
     private int getSlotIndex(long num) {
         int index = 0;
         for (int i = 0; i < topPercentileMeta.length; i++) {

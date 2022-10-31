@@ -842,6 +842,7 @@ public class CompactionLog {
         private byte[] hash1;
         private byte[] hash2;
 
+        @SuppressWarnings("all")
         public OffsetMap(int memorySize) throws NoSuchAlgorithmException {
             this(memorySize, MessageDigest.getInstance("MD5"));
         }
