@@ -744,6 +744,7 @@ public class DefaultMappedFile extends AbstractMappedFile {
                 this.fileName = newFileName;
                 this.file = new File(newFileName);
             } catch (IOException e) {
+                e.printStackTrace();
                 log.error("move file {} failed", fileName, e);
             }
         }

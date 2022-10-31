@@ -697,6 +697,7 @@ public class CompactionLog {
             try {
                 mappedFile.moveToParent();
             } catch (IOException e) {
+                e.printStackTrace();
                 log.error("move file {} to parent directory exception: ", mappedFile.getFileName());
             }
         });
