@@ -312,6 +312,7 @@ public class DefaultMessageStore implements MessageStore {
             this.setBrokerInitMaxOffset(maxOffset);
             LOGGER.info("load over, and the max phy offset = {}", maxOffset);
         } catch (Exception e) {
+            e.printStackTrace();
             LOGGER.error("load exception", e);
             result = false;
         }
