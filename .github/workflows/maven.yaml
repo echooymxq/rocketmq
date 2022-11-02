@@ -1,9 +1,9 @@
 name: Build and Run Tests by Maven
-#on:
-#  pull_request:
-#    types: [opened, reopened, synchronize]
-#  push:
-#    branches: [test]
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+  push:
+    branches: [test]
 jobs:
   java_build:
     name: "maven-compile (${{ matrix.os }}, JDK-${{ matrix.jdk }})"
@@ -23,4 +23,4 @@ jobs:
           distribution: "adopt"
           cache: "maven"
       - name: Build with Maven
-        run: mvn test -pl common,store -DfailIfNoTests=false --file pom.xml
+        run: mvn test -pl common,broker -Dtest=MessageStoreWithFilterTest -DfailIfNoTests=false --file pom.xml
