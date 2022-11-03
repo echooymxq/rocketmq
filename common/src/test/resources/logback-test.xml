@@ -15,32 +15,17 @@
   See the License for the specific language governing permissions and
   limitations under the License.
   -->
-
 <configuration>
-    <appender name="RocketmqClientAppender"
-              class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${loggingDir}/logback_test.log</file>
-        <append>true</append>
-        <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-            <fileNamePattern>${loggingDir}/logback_test.%i.log
-            </fileNamePattern>
-            <minIndex>1</minIndex>
-            <maxIndex>5</maxIndex>
-        </rollingPolicy>
-        <triggeringPolicy
-            class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-            <maxFileSize>10MB</maxFileSize>
-        </triggeringPolicy>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{yyy-MM-dd HH:mm:ss,GMT+8} %p %t - %m%n</pattern>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{5} - %msg%n</pattern>
             <charset class="java.nio.charset.Charset">UTF-8</charset>
         </encoder>
     </appender>
 
-    <logger name="Slf4jTestLogger" additivity="false">
-        <level value="INFO"/>
-        <appender-ref ref="RocketmqClientAppender"/>
-    </logger>
-
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+    </root>
 
 </configuration>
