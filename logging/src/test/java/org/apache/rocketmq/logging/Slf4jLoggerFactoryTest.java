@@ -40,9 +40,9 @@ public class Slf4jLoggerFactoryTest extends BasicLoggerTest {
         ILoggerFactory iLoggerFactory = LoggerFactory.getILoggerFactory();
         JoranConfigurator joranConfigurator = new JoranConfigurator();
         joranConfigurator.setContext((Context) iLoggerFactory);
-        URL logbackConfigFile = Slf4jLoggerFactoryTest.class.getClassLoader().getResource("logback_test.xml");
+        URL logbackConfigFile = Slf4jLoggerFactoryTest.class.getClassLoader().getResource("logback-test.xml");
         if (logbackConfigFile == null) {
-            throw new RuntimeException("can't find logback_test.xml");
+            throw new RuntimeException("can't find logback-test.xml");
         } else {
             joranConfigurator.doConfigure(logbackConfigFile);
         }
