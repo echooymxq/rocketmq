@@ -23,7 +23,7 @@ public interface BrokerHeartbeatManager {
     /**
      * Broker new heartbeat.
      */
-    void onBrokerHeartbeat(final String clusterName, final String brokerAddr, final Integer epoch, final Long maxOffset, final Long confirmOffset);
+    void onBrokerHeartbeat(final String clusterName, final String brokerName, final Long brokerId, final String brokerAddr, final Integer epoch, final Long maxOffset, final Long confirmOffset);
 
     /**
      * Change the metadata(brokerId ..) for a broker.
@@ -39,11 +39,6 @@ public interface BrokerHeartbeatManager {
      * Shutdown heartbeat manager.
      */
     void shutdown();
-
-    /**
-     * Add BrokerLifecycleListener.
-     */
-    void addBrokerLifecycleListener(final BrokerLifecycleListener listener);
 
     /**
      * Register new broker to heartManager.
@@ -66,10 +61,4 @@ public interface BrokerHeartbeatManager {
      */
     boolean isBrokerActive(final String clusterName, final String brokerAddr);
 
-    interface BrokerLifecycleListener {
-        /**
-         * Trigger when broker inactive.
-         */
-        void onBrokerInactive(final String clusterName, final String brokerName, final String brokerAddress, final long brokerId);
-    }
 }

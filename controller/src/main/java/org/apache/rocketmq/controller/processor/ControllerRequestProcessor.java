@@ -27,6 +27,7 @@ import org.apache.rocketmq.common.MixAll;
 import org.apache.rocketmq.common.constant.LoggerName;
 import org.apache.rocketmq.controller.BrokerHeartbeatManager;
 import org.apache.rocketmq.controller.ControllerManager;
+import org.apache.rocketmq.controller.impl.BrokerControllerManager;
 import org.apache.rocketmq.logging.org.slf4j.Logger;
 import org.apache.rocketmq.logging.org.slf4j.LoggerFactory;
 import org.apache.rocketmq.remoting.common.RemotingHelper;
@@ -35,6 +36,7 @@ import org.apache.rocketmq.remoting.protocol.RemotingCommand;
 import org.apache.rocketmq.remoting.protocol.RemotingSerializable;
 import org.apache.rocketmq.remoting.protocol.ResponseCode;
 import org.apache.rocketmq.remoting.protocol.body.SyncStateSet;
+import org.apache.rocketmq.remoting.protocol.header.controller.RegisterBrokerToControllerResponseHeader;
 import org.apache.rocketmq.remoting.protocol.header.namesrv.BrokerHeartbeatRequestHeader;
 import org.apache.rocketmq.remoting.protocol.header.controller.AlterSyncStateSetRequestHeader;
 import org.apache.rocketmq.remoting.protocol.header.controller.CleanControllerBrokerDataRequestHeader;
@@ -42,7 +44,6 @@ import org.apache.rocketmq.remoting.protocol.header.controller.ElectMasterReques
 import org.apache.rocketmq.remoting.protocol.header.controller.ElectMasterResponseHeader;
 import org.apache.rocketmq.remoting.protocol.header.controller.GetReplicaInfoRequestHeader;
 import org.apache.rocketmq.remoting.protocol.header.controller.RegisterBrokerToControllerRequestHeader;
-import org.apache.rocketmq.remoting.protocol.header.controller.RegisterBrokerToControllerResponseHeader;
 
 import static org.apache.rocketmq.remoting.protocol.RequestCode.BROKER_HEARTBEAT;
 import static org.apache.rocketmq.remoting.protocol.RequestCode.CLEAN_BROKER_DATA;
@@ -63,10 +64,12 @@ public class ControllerRequestProcessor implements NettyRequestProcessor {
     private static final int WAIT_TIMEOUT_OUT = 5;
     private final ControllerManager controllerManager;
     private final BrokerHeartbeatManager heartbeatManager;
+    private final BrokerControllerManager brokerControllerManager;
 
     public ControllerRequestProcessor(final ControllerManager controllerManager) {
         this.controllerManager = controllerManager;
         this.heartbeatManager = controllerManager.getHeartbeatManager();
+        this.brokerControllerManager = controllerManager.getBrokerControllerManager();
     }
 
     @Override
@@ -99,7 +102,7 @@ public class ControllerRequestProcessor implements NettyRequestProcessor {
                             heartbeatManager.changeBrokerMetadata(electMasterRequest.getClusterName(), responseHeader.getNewMasterAddress(), MixAll.MASTER_ID);
                         }
                         if (this.controllerManager.getControllerConfig().isNotifyBrokerRoleChanged()) {
-                            this.controllerManager.notifyBrokerRoleChanged(responseHeader, electMasterRequest.getClusterName());
+                            this.brokerControllerManager.notifyBrokerRoleChanged(responseHeader, electMasterRequest.getClusterName());
                         }
                     }
                     return response;
@@ -134,7 +137,7 @@ public class ControllerRequestProcessor implements NettyRequestProcessor {
             }
             case BROKER_HEARTBEAT: {
                 final BrokerHeartbeatRequestHeader requestHeader = (BrokerHeartbeatRequestHeader) request.decodeCommandCustomHeader(BrokerHeartbeatRequestHeader.class);
-                this.heartbeatManager.onBrokerHeartbeat(requestHeader.getClusterName(), requestHeader.getBrokerAddr(),
+                this.heartbeatManager.onBrokerHeartbeat(requestHeader.getClusterName(), requestHeader.getBrokerName(), requestHeader.getBrokerId(), requestHeader.getBrokerAddr(),
                         requestHeader.getEpoch(), requestHeader.getMaxOffset(), requestHeader.getConfirmOffset());
                 return RemotingCommand.createResponseCommand(ResponseCode.SUCCESS, "Heart beat success");
             }
