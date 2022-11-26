@@ -22,7 +22,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.common.ControllerConfig;
@@ -52,7 +51,7 @@ public class BrokerControllerManager {
     private final ControllerConfig controllerConfig;
     private final DefaultBrokerHeartbeatManager heartbeatManager;
 
-    private final ScheduledExecutorService scheduledService = new ScheduledThreadPoolExecutor(2, new ThreadFactoryImpl("BrokerControllerManager_scheduledService_"));
+    private final ScheduledExecutorService scheduledService = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl("BrokerControllerManager_scheduledService_"));
     private final ExecutorService executor = Executors.newFixedThreadPool(1, new ThreadFactoryImpl("BrokerControllerManager_executorService_"));
 
     private final RemotingClient remotingClient;
@@ -68,7 +67,7 @@ public class BrokerControllerManager {
 
     public void start() {
         this.remotingClient.start();
-        this.scheduledService.scheduleAtFixedRate(this::scanNotActiveMaster, 2000, this.controllerConfig.getScanNotActiveMasterInterval(), TimeUnit.MILLISECONDS);
+        this.scheduledService.scheduleWithFixedDelay(this::scanNotActiveMaster, 2000, this.controllerConfig.getScanNotActiveMasterInterval(), TimeUnit.MILLISECONDS);
     }
 
     public void scanNotActiveMaster() {
@@ -83,7 +82,7 @@ public class BrokerControllerManager {
                     }
                     final String brokerAddr = brokerAddrs.get(MixAll.MASTER_ID);
                     if (StringUtils.isEmpty(brokerAddr) || !this.heartbeatManager.isBrokerActive(clusterName, brokerAddr)) {
-                        this.executor.submit(() -> handleMasterInactive(clusterName, next.getKey(), brokerAddr));
+                        handleMasterInactive(clusterName, next.getKey(), brokerAddr);
                     }
                 }
             }
@@ -149,7 +148,7 @@ public class BrokerControllerManager {
                 responseHeader.getMasterEpoch(), responseHeader.getSyncStateSetEpoch(), brokerId);
             final RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.NOTIFY_BROKER_ROLE_CHANGED, requestHeader);
             try {
-                this.remotingClient.invokeOneway(brokerAddr, request, 3000);
+                this.remotingClient.invokeSync(brokerAddr, request, 10000);
             } catch (final Exception e) {
                 log.error("Failed to notify broker {} with id {} that role changed", brokerAddr, brokerId, e);
             }
