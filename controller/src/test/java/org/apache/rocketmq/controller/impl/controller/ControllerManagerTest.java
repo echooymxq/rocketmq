@@ -175,7 +175,7 @@ public class ControllerManagerTest {
                 e.printStackTrace();
             }
         }, 0, 2000L, TimeUnit.MILLISECONDS);
-        Boolean flag = await().atMost(Duration.ofSeconds(5)).until(() -> {
+        Boolean flag = await().atMost(Duration.ofSeconds(10)).until(() -> {
             final GetReplicaInfoRequestHeader requestHeader = new GetReplicaInfoRequestHeader("broker1");
             final RemotingCommand request = RemotingCommand.createRequestCommand(RequestCode.CONTROLLER_GET_REPLICA_INFO, requestHeader);
             final RemotingCommand response = this.remotingClient1.invokeSync(leaderAddr, request, 3000);
